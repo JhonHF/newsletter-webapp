@@ -10,22 +10,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { getAllNewsletter } from "../actions/services.actions";
+import { createEmail, getAllNewsletter } from "../actions/services.actions";
 import { Button } from "@/components/ui/button";
 import { Newsletter } from "../api/newsletter/types";
 
 function EmailForm() {
-  const form = useForm<any>();
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const form = useForm<EmailFields>();
   const { toast } = useToast();
+
+  const { register } = form;
 
   const handleNewsletters = useCallback(async () => {
     try {
@@ -53,9 +55,22 @@ function EmailForm() {
     handleNewsletters();
   }, [handleNewsletters]);
 
+  const handleSubmit = async (values: EmailFields) => {
+    try {
+      const formData = new FormData();
+      formData.append("attachment", values.attachment[0]);
+      formData.append("newsletter", values.newsletter);
+
+       await createEmail(formData);
+
+    } catch (error) {
+     console.log(error);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((v) => console.log(v))}>
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
         <FormField
           control={form.control}
           name="newsletter"
@@ -87,19 +102,13 @@ function EmailForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Atachment</FormLabel>
-              <FormControl>
-                <Input type="file" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>File attachment</FormLabel>
+          <FormControl>
+            <Input type="file" {...register("attachment")} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
 
         <Button type="submit">Submit</Button>
       </form>

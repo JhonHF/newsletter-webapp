@@ -43,7 +43,6 @@ function NewsletterCardList() {
 
   const handleDeleteNewsLetters = useCallback(async (id: number) => {
     try {
-      console.log("shegou")
       const res = await deleteNewsletter(id);
       if (!res.ok) {
         throw new Error();
